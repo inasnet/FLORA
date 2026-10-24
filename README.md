@@ -1,28 +1,54 @@
 ﻿# Folia — Analyse des feuilles de tomate
 
-Double-cliquez sur Lancer_interface.bat, puis ouvrez http://localhost:8501.
+Folia est une application qui permet d’analyser une photographie de feuille de tomate et de comparer les prédictions de trois modèles GoogLeNet entraînés à différentes échelles d’observation.
 
-Installation si nécessaire :
-C:\Users\HP\anaconda3\python.exe -m pip install -r requirements.txt
+Le projet explore l’influence du cadrage sur la reconnaissance des maladies foliaires : une vue de la feuille entière, une portion centrale ou un gros plan peuvent conduire à des prédictions différentes.
 
-Lancement manuel :
-C:\Users\HP\anaconda3\python.exe -m streamlit run app.py --server.address 127.0.0.1
+## Fonctionnalités
 
-Les trois fichiers fournis sont déjà des archives de sérialisation PyTorch : ils sont copiés sous models/*.pt sans extraction.
-L’ordre des classes et le prétraitement proviennent de projet_feuilles_googlenet.ipynb : saine, alternariose, mildiou, septoriose ; recadrage central 100/60/35 %, Resize 224×224, normalisation ImageNet, transform_input=True comme dans le constructeur préentraîné utilisé à l’entraînement. Aucune augmentation aléatoire en prédiction.
+- Import d’une photographie au format JPG, PNG ou BMP.
+- Aperçu des trois cadrages utilisés pour l’analyse.
+- Sélection d’un ou de plusieurs modèles à comparer.
+- Affichage de la classe prédite et des probabilités pour chaque modèle.
+- Comparaison de l’accord ou des divergences entre les modèles.
+- Export des résultats au format CSV.
 
-Importez une photo, choisissez les modèles, cliquez sur Analyser. Les résultats et leurs probabilités peuvent être exportés en CSV. Les modèles sont chargés avec weights_only=True et vérification stricte des paramètres. Aucun téléchargement de poids ImageNet n’est nécessaire.
+## Classes reconnues
 
-Le calcul utilise le CPU. Les scores softmax ne sont pas calibrés et ne remplacent pas une évaluation de fiabilité. Les modèles ne détectent pas les images hors domaine.
+L’application distingue quatre états de la feuille de tomate :
 
-## Déploiement sur Streamlit Community Cloud
+| Classe | Description |
+| --- | --- |
+| Feuille saine | Absence de maladie parmi les classes étudiées |
+| Alternariose | Early blight |
+| Mildiou | Late blight |
+| Septoriose | Septoria leaf spot |
 
-1. Connectez-vous sur https://share.streamlit.io avec votre compte GitHub.
-2. Cliquez sur Create app et sélectionnez inasnet/FLORA.
-3. Branche : main. Fichier principal : app.py.
-4. Dans Advanced settings, choisissez Python 3.13, utilisé pour la validation locale.
-5. Cliquez sur Deploy.
+## Trois échelles d’observation
 
-Les trois modèles sont inclus dans models/. Aucun secret ni chemin Windows n’est nécessaire au déploiement. requirements.txt fixe les versions validées localement et ajoute l’index CPU officiel PyTorch pour le serveur Linux.
+Chaque modèle analyse un cadrage différent de la même photographie.
 
-Documentation : https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy
+| Modèle | Vue analysée |
+| --- | --- |
+| Global | Image entière |
+| Intermédiaire | Recadrage central conservant 60 % de la largeur et de la hauteur |
+| Local | Recadrage central conservant 35 % de la largeur et de la hauteur |
+
+Les vues sont redimensionnées à 224 × 224 pixels avant l’analyse. Les trois modèles reposent sur l’architecture GoogLeNet et ont été entraînés sur quatre classes de tomate issues de PlantVillage.
+
+## Parcours dans l’application
+
+1. Importer une photo nette avec la feuille placée au centre.
+2. Choisir les modèles à utiliser.
+3. Cliquer sur **Analyser la feuille**.
+4. Consulter les prédictions et, si souhaité, télécharger les résultats.
+
+## Interprétation des résultats
+
+Les probabilités indiquent les scores attribués aux quatre classes apprises. Elles ne constituent pas une mesure de fiabilité sur une photographie donnée.
+
+Folia est un projet expérimental. Les modèles attribuent une classe à toute image sans vérifier qu’elle représente une feuille de tomate. Les résultats sur des photos de terrain peuvent différer de ceux obtenus sur les images de PlantVillage.
+
+## Technologies
+
+Python · Streamlit · PyTorch · Torchvision · Pillow · Pandas
